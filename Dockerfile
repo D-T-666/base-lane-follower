@@ -1,6 +1,6 @@
 # parameters
 ARG REPO_NAME="base-lane-follower"
-ARG DESCRIPTION="Lane follower demo template"
+ARG DESCRIPTION="Lane follower template project"
 ARG MAINTAINER="Sandro Lortkipanidze (lortkipanidze.sandro@proton.me) | Aleksandre Gordeladze (aleqsandre1515@gmail.com) | Nikolai Khalatiani (nkhalatiani@gmail.com)"
 # pick an icon from: https://fontawesome.com/v4.7.0/icons/
 ARG ICON="cube"

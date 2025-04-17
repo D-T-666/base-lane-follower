@@ -13,17 +13,26 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Float64, Bool
 from rospy.numpy_msg import numpy_msg
 
+LEFT = 0.2
+RIGHT = 0.2
+GAIN = 0.2
+CONST = 0.3
+SLOW_RATIO = 1
 
-def nothing(x):
-    pass
+# def nothing(x):
+#     pass
 
 
 class CameraReaderNode(DTROS):
 
     def __init__(self, node_name):
+        self.left = LEFT
+        self.right = RIGHT
+        self.gain = GAIN
+        self.const = CONST
+
         # initialize the DTROS parent class
-        super(CameraReaderNode, self).__init__(
-            node_name=node_name, node_type=NodeType.VISUALIZATION)
+        super(CameraReaderNode, self).__init__(node_name=node_name, node_type=NodeType.VISUALIZATION)
         # static parameters
         self._vehicle_name = os.environ['VEHICLE_NAME']
         self._camera_topic = f"/{self._vehicle_name}/camera_node/image/compressed"
@@ -34,30 +43,22 @@ class CameraReaderNode(DTROS):
         cv2.namedWindow(self._window, cv2.WINDOW_AUTOSIZE)
 
         # construct subscriber
-        self.sub2 = rospy.Subscriber(
-            self._camera_topic, CompressedImage, self.callback2)
-        self.sub = rospy.Subscriber(
-            self._camera_topic, CompressedImage, self.callback)
-        self._publisher = rospy.Publisher(
-            wheels_topic, WheelsCmdStamped, queue_size=1)
+        # self.sub2 = rospy.Subscriber(self._camera_topic, CompressedImage, self.callback2)
+        self.sub = rospy.Subscriber(self._camera_topic, CompressedImage, self.callback)
+        self._publisher = rospy.Publisher(wheels_topic, WheelsCmdStamped, queue_size=1)
 
         self.left_motor = rospy.Publisher("left_motor", Float64, queue_size=1)
-        self.right_motor = rospy.Publisher(
-            "right_motor", Float64, queue_size=1)
+        self.right_motor = rospy.Publisher("right_motor", Float64, queue_size=1)
 
-        self.left = 0.2
-        self.right = 0.2
-        self.gain = 0.2
-        self.const = 0.3
 
-        self.slow_ratio = 1
+        self.slow_ratio = SLOW_RATIO
 
         self.shutting_down = False
         rospy.on_shutdown(self.shutdown_hook)
 
-        self.red_line_detected = False
-        self.has_stopped = False
-        self.red_image = None
+        # self.red_line_detected = False
+        # self.has_stopped = False
+        # self.red_image = NonezZ
 
     def shutdown_hook(self):
         self.shutting_down = True
@@ -65,59 +66,62 @@ class CameraReaderNode(DTROS):
         self.right_motor.publish(0)
         cv2.destroyAllWindows()  # Close the OpenCV window
 
-    def callback2(self, msg):
-        image = self.bridge.compressed_imgmsg_to_cv2(msg)
-        self.has_stopped = not self.has_stopped
-        # image = cv2.bilateralFilter(image, 12, 125, 155)
-        yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
-        lb_red = np.array([0, 0, 170])
-        ub_red = np.array([2172, 5204, 10000])
-        mask_red = cv2.inRange(yuv, lb_red, ub_red)
-        red_image = cv2.bitwise_and(image, image, mask=mask_red)
-        # red_image[:300, :] = 0
-        red_image[:180, :] = 0
-        gray = cv2.cvtColor(red_image, cv2.COLOR_BGR2GRAY)
+    # def callback2(self, msg):
+    #     image = self.bridge.compressed_imgmsg_to_cv2(msg)
 
-        # Find contours in the image
-        contours, _ = cv2.findContours(
-            gray, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        area = 0
-        # Filter horizontal blocks and print "found" when detected
-        x, y, w, h, aspect_ratio = 0, 0, 0, 0, 0
-        for cnt in contours:
-            max_contour = max(contours, key=cv2.contourArea)
+    #     self.left_motor.publish(0)
+    #     self.right_motor.publish(0)
+    #     # self.has_stopped = not self.has_stopped
+    #     # image = cv2.bilateralFilter(image, 12, 125, 155)
+    #     # yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
+    #     # lb_red = np.array([0, 0, 170])
+    #     # ub_red = np.array([2172, 5204, 10000])
+    #     # mask_red = cv2.inRange(yuv, lb_red, ub_red)
+    #     # red_image = cv2.bitwise_and(image, image, mask=mask_red)
+    #     # red_image[:300, :] = 0
+    #     # red_image[:180, :] = 0
+    #     # gray = cv2.cvtColor(red_image, cv2.COLOR_BGR2GRAY)
 
-            # Get bounding box and calculate aspect ratio
-            x, y, w, h = cv2.boundingRect(max_contour)
+    #     # Find contours in the image
+    #     # contours, _ = cv2.findContours(
+    #         # gray, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    #     # area = 0
+    #     # Filter horizontal blocks and print "found" when detected
+    #     # x, y, w, h, aspect_ratio = 0, 0, 0, 0, 0
+    #     # for cnt in contours:
+    #     #     max_contour = max(contours, key=cv2.contourArea)
 
-            aspect_ratio = float(w)/h  # width/height
+    #     #     # Get bounding box and calculate aspect ratio
+    #     #     x, y, w, h = cv2.boundingRect(max_contour)
 
-            area = max(area, w*h)
-            if aspect_ratio >= 2:  # Adjust this value to allow some deviation
+    #     #     aspect_ratio = float(w)/h  # width/height
 
-                cv2.rectangle(red_image, (x, y), (x+w, y+h), (255, 0, 0), 2)
-        self.red_image = red_image
+    #     #     area = max(area, w*h)
+    #     #     if aspect_ratio >= 2:  # Adjust this value to allow some deviation
 
-        red_lower_edge = y + h
-        if aspect_ratio > 2:
-            self.slow_ratio = 1 - red_lower_edge / \
-                480 if self.slow_ratio >= 0.02 else self.slow_ratio
-        else:
-            self.slow_ratio = 1
-        if area > 40000 and not self.has_stopped and not self.red_line_detected:
-            self.has_stopped = True
-            self.left_motor.publish(0)
-            self.right_motor.publish(0)
-            rospy.sleep(1)
-            self.left_motor.publish(0.4)
-            self.right_motor.publish(0.1)
-            rospy.sleep(2.6)
-            self.has_stopped = False
-            self.red_line_detected = True
+    #     #         cv2.rectangle(red_image, (x, y), (x+w, y+h), (255, 0, 0), 2)
+    #     # self.red_image = red_image
+
+    #     # red_lower_edge = y + h
+    #     # if aspect_ratio > 2:
+    #     #     self.slow_ratio = 1 - red_lower_edge / \
+    #     #         480 if self.slow_ratio >= 0.02 else self.slow_ratio
+    #     # else:
+    #     #     self.slow_ratio = 1
+    #     # if area > 40000 and not self.has_stopped and not self.red_line_detected:
+    #     #     self.has_stopped = True
+    #     #     self.left_motor.publish(0)
+    #     #     self.right_motor.publish(0)
+    #     #     rospy.sleep(1)
+    #     #     self.left_motor.publish(0.4)
+    #     #     self.right_motor.publish(0.1)
+    #     #     rospy.sleep(2.6)
+    #     #     self.has_stopped = False
+    #     #     self.red_line_detected = True
 
     def callback(self, msg):
 
-        if self.shutting_down or self.has_stopped:
+        if self.shutting_down:
             return
 
         self.image = self.bridge.compressed_imgmsg_to_cv2(msg)
