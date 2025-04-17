@@ -1,0 +1,11 @@
+<package>
+  <name>Main</name>
+  <version>0.0.1</version>
+  <description>
+  Handles stuff.
+  </description>
+  <maintainer email="lortkipanidze.sandro@proton.me">Sandro Lortkipanidze</maintainer>
+  <license>None</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+</package>
