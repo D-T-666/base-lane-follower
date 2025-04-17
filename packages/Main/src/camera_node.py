@@ -20,7 +20,6 @@ CONST = 0.3
 SLOW_RATIO = 1
 
 
-
 class CameraReaderNode(DTROS):
 
     def __init__(self, node_name):
@@ -28,26 +27,30 @@ class CameraReaderNode(DTROS):
         self.right = RIGHT
         self.gain = GAIN
         self.const = CONST
+        self.slow_ratio = SLOW_RATIO
 
         # initialize the DTROS parent class
-        super(CameraReaderNode, self).__init__(node_name=node_name, node_type=NodeType.VISUALIZATION)
+        super(CameraReaderNode, self).__init__(
+            node_name=node_name, node_type=NodeType.VISUALIZATION)
+
         # static parameters
         self._vehicle_name = os.environ['VEHICLE_NAME']
         self._camera_topic = f"/{self._vehicle_name}/camera_node/image/compressed"
+
         # bridge between OpenCV and ROS
         wheels_topic = f"/{self._vehicle_name}/wheels_driver_node/wheels_cmd"
         self._window = "camera-reader"
         self.bridge = CvBridge()
         cv2.namedWindow(self._window, cv2.WINDOW_AUTOSIZE)
 
-        self.sub = rospy.Subscriber(self._camera_topic, CompressedImage, self.callback)
-        self._publisher = rospy.Publisher(wheels_topic, WheelsCmdStamped, queue_size=1)
+        self.sub = rospy.Subscriber(
+            self._camera_topic, CompressedImage, self.callback)
+        self._publisher = rospy.Publisher(
+            wheels_topic, WheelsCmdStamped, queue_size=1)
 
         self.left_motor = rospy.Publisher("left_motor", Float64, queue_size=1)
-        self.right_motor = rospy.Publisher("right_motor", Float64, queue_size=1)
-
-
-        self.slow_ratio = SLOW_RATIO
+        self.right_motor = rospy.Publisher(
+            "right_motor", Float64, queue_size=1)
 
         self.shutting_down = False
         rospy.on_shutdown(self.shutdown_hook)
@@ -56,8 +59,9 @@ class CameraReaderNode(DTROS):
         self.shutting_down = True
         self.left_motor.publish(0)
         self.right_motor.publish(0)
-        cv2.destroyAllWindows()  # Close the OpenCV window
 
+        # Close the OpenCV window
+        cv2.destroyAllWindows()
 
     def callback(self, msg):
 
@@ -90,15 +94,14 @@ class CameraReaderNode(DTROS):
 
         # NORMAL VALUES
 
-        lb_red = np.array([0, 0, 170])
-        ub_red = np.array([2172, 5204, 10000])
-        mask_red = cv2.inRange(yuv, lb_red, ub_red)
-        red_image = cv2.bitwise_and(self.image, self.image, mask=mask_red)
-        red_image[:300, :] = 0
+        # lb_red = np.array([0, 0, 170])
+        # ub_red = np.array([2172, 5204, 10000])
+        # mask_red = cv2.inRange(yuv, lb_red, ub_red)
+        # red_image = cv2.bitwise_and(self.image, self.image, mask=mask_red)
+        # red_image[:300, :] = 0
 
-        # tmp = cv2.bitwise_or(yellow_image, self.red_image)
         combined_img = cv2.bitwise_or(yellow_image, white_image)
-        combined_img = cv2.bitwise_or(combined_img, red_image)
+        # combined_img = cv2.bitwise_or(combined_img, red_image)
         white_color_count = np.count_nonzero(white_image)
         yellow_color_count = np.count_nonzero(yellow_image)
 
@@ -106,9 +109,9 @@ class CameraReaderNode(DTROS):
         yellow_color_count = yellow_color_count / (640*480)
 
         left_motor = (self.const + self.gain * (self.left *
-                    white_color_count)) * self.slow_ratio
+                                                white_color_count)) * self.slow_ratio
         right_motor = (self.const + self.gain * (self.right *
-                    yellow_color_count)) * self.slow_ratio
+                                                 yellow_color_count)) * self.slow_ratio
 
         if white_color_count < 0.1 and yellow_color_count < 0.1:
             self.left_motor.publish(-0.8)
@@ -122,18 +125,12 @@ class CameraReaderNode(DTROS):
             if not self.shutting_down:
                 self.left_motor.publish(left_motor)
                 self.right_motor.publish(right_motor)
-
         elif yellow_color_count > white_color_count:
             right_motor = right_motor - 0.2 if right_motor > 0.2 else right_motor
             left_motor += 0.25
             if not self.shutting_down:
                 self.left_motor.publish(left_motor)
                 self.right_motor.publish(right_motor)
-
-        # combined_img[:, ::20] = [0, 0, 255]
-        # combined_img[::20, :] = [0, 0, 255]
-        # combined_img[:, 320] = [255, 0, 0]
-        # combined_img[240, :] = [255, 0, 0]
 
         cv2.imshow(self._window, combined_img)
         cv2.waitKey(1)
@@ -142,5 +139,6 @@ class CameraReaderNode(DTROS):
 if __name__ == '__main__':
     # create the node
     node = CameraReaderNode(node_name='camera_reader_node')
+
     # keep spinning
     rospy.spin()
