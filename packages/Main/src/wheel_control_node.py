@@ -4,11 +4,12 @@ import os
 import rospy
 from duckietown.dtros import DTROS, NodeType
 from duckietown_msgs.msg import WheelsCmdStamped
-from sensor_msgs.msg import Image
-from std_msgs.msg import Float64, Bool
+# from sensor_msgs.msg import Image
+from std_msgs.msg import Float64
+# from std_msgs.msg import Bool
 from cv_bridge import CvBridge
-import numpy as np
-import cv2
+# import numpy as np
+# import cv2
 
 
 class WheelControlNode(DTROS):

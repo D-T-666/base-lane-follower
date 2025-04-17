@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import threading
-import time
+# import threading
+# import time
 import os
 import rospy
 from duckietown.dtros import DTROS, NodeType
@@ -9,9 +9,10 @@ from duckietown_msgs.msg import WheelsCmdStamped
 import numpy as np
 import cv2
 from cv_bridge import CvBridge
-from sensor_msgs.msg import Image
-from std_msgs.msg import Float64, Bool
-from rospy.numpy_msg import numpy_msg
+# from sensor_msgs.msg import Image
+from std_msgs.msg import Float64
+# from std_msgs.msg import Bool
+# from rospy.numpy_msg import numpy_msg
 
 LEFT = 0.2
 RIGHT = 0.2
