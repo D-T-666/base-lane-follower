@@ -1,47 +1,99 @@
-# Template: template-ros
+# Final Project in Software Engineering Practical Course
 
-This template provides a boilerplate repository
-for developing ROS-based software in Duckietown.
+> **Special thanks** to **Aleksandre Gordeladze** for his great effort in laying the foundation for this repository.
 
-**NOTE:** If you want to develop software that does not use
-ROS, check out [this template](https://github.com/duckietown/template-basic).
+This repository provides a robust template for a ROS-based Duckiebot project with a focus on **lane following**. It serves as a foundation for more advanced autonomous behaviors such as **obstacle avoidance**, **object and sign detection**, and **navigation**.
 
+Developed as part of the **Software Engineering Practical Course** at **Kutaisi International University**, this repository is designed to run inside the [Duckietown](https://www.duckietown.org/) ecosystem using Docker and `duckietown-shell` (`dts`).
 
-## How to use it
+---
 
-### 1. Fork this repository
+## 🛠️ Project Structure
 
-Use the fork button in the top-right corner of the github page to fork this template repository.
+This template includes the essential components to get a Duckiebot to follow lanes autonomously:
 
+- ✅ A **camera node** that processes real-time image input using OpenCV
+- ✅ A **wheel control node** that computes and publishes motor commands
+- ✅ A `default` launcher for easy deployment
+- 🧱 Clean modular setup to extend with additional nodes or features
 
-### 2. Create a new repository
+---
 
-Create a new repository on github.com while
-specifying the newly forked template repository as
-a template for your new repository.
+## 🚀 How to Use It
 
+### 1. Clone the Repository
 
-### 3. Define dependencies
+```bash
+git clone https://github.com/nikakhalatiani/base-lane-follower.git
+cd base-lane-follower
+```
 
-List the dependencies in the files `dependencies-apt.txt` and
-`dependencies-py3.txt` (apt packages and pip packages respectively).
+### 2. Make ROS Nodes Executable
 
+Navigate to the `src/` folder and run:
 
-### 4. Place your code
+```bash
+chmod +x camera_node.py
+chmod +x wheel_control_node.py
+```
 
-Place your code in the directory `/packages/` of
-your new repository.
+### 3. Build the Project
 
+Every time you modify the code, rebuild the image using:
 
-### 5. Setup launchers
+```bash
+dts devel build -f
+```
 
-The directory `/launchers` can contain as many launchers (launching scripts)
-as you want. A default launcher called `default.sh` must always be present.
+### 4. Run on Duckiebot
 
-If you create an executable script (i.e., a file with a valid shebang statement)
-a launcher will be created for it. For example, the script file 
-`/launchers/my-launcher.sh` will be available inside the Docker image as the binary
-`dt-launcher-my-launcher`.
+To deploy and run your code on a physical Duckiebot:
 
-When launching a new container, you can simply provide `dt-launcher-my-launcher` as
-command.
+```bash
+dts devel run -R BOTNAME -L default -X
+```
+
+> **Note:** `default` refers to the launch script in the `launchers/` directory and should not be renamed.
+
+---
+
+## 🧪 What to Expect
+
+When deployed on the Duckiebot:
+- The **camera node** captures and processes video feed in real time.
+- It identifies **lane markings** (white and yellow).
+- Motor commands are computed based on detected features and passed to the **wheel control node**.
+- A **visual overlay** of processed output, including detected lines, is shown for debugging or demonstration.
+
+---
+
+## 📁 Folder Structure (Simplified)
+
+```
+.
+├── launchers/
+│   └── default.sh
+├── packages/
+│   └── Main/
+│       ├── src/
+│       │   ├── camera_node.py
+│       │   └── wheel_control_node.py
+│       └── ...
+├── Dockerfile
+├── README.md
+└── ...
+```
+
+> All user-defined logic and ROS nodes should be placed inside `packages/Main/src`.
+
+---
+
+## 👨‍💻 Contributors
+
+This repository is maintained as part of the **Software Engineering Practical Course** at **Kutaisi International University**.
+
+> 💡 **Contributions are welcome!**  
+> You are encouraged to:
+> - **Fork** this repository and build on top of it
+> - **Open issues** for bugs, questions, or feature requests
+> - **Submit pull requests** (PRs) to enhance or fix the current implementation
