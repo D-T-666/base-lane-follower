@@ -95,8 +95,8 @@ class CameraReaderNode(DTROS):
         mask_yellow[:int(h*0.55), :] = 0
         
         # White line detection (usually right boundary)
-        lb_white = np.array([0, 180, 0])  # Higher lightness threshold
-        ub_white = np.array([179, 255, 255])
+        lb_white = np.array([0, 144, 0])  # Higher lightness threshold
+        ub_white = np.array([168, 255, 36])
         mask_white = cv2.inRange(hls, lb_white, ub_white)
         # Apply region of interest - focus on bottom part of image
         mask_white[:int(h*0.55), :] = 0
