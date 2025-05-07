@@ -33,8 +33,8 @@ cd base-lane-follower
 Navigate to the `src/` folder and run:
 
 ```bash
-chmod +x camera_node.py
-chmod +x wheel_control_node.py
+chmod +x ./packages/Main/src/camera_node.py
+chmod +x ./packages/Main/src/wheel_control_node.py
 ```
 
 ### 3. Build the Project
