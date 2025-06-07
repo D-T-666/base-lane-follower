@@ -96,7 +96,7 @@ class CameraReaderNode(DTROS):
 
         action_end = False
         if self.instructions[self.ind] == "F":
-            action_end = detect_red(self.image)
+            action_end = self.detect_red(self.image)
         else:
             action_end = self.action_timer < 0
 
@@ -104,7 +104,7 @@ class CameraReaderNode(DTROS):
             self.ind += 1
             self.action_timer = self.action_times[ind]
 
-        left_wheel, right_wheel = self.actions[self.instructions[ind]](self.image)
+        left_motor, right_motor = self.actions[self.instructions[self.ind]](self.image)
 
         self.left_motor.publish(left_motor)
         self.right_motor.publish(right_motor)
