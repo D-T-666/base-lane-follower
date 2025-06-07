@@ -110,7 +110,7 @@ class CameraReaderNode(DTROS):
         self.action_timer -= delta_time
         self.p_time = time.time()
 
-    def detect_red(self) -> bool:
+    def detect_red(self):
         h, w = self.image.shape[:2]
         nw, nh = int(w * 0.7) - int(w * 0.3), h - int(h * 0.7)
         roi = self.image[int(h*0.7):, int(w*0.3):int(w*0.7)]
@@ -124,16 +124,16 @@ class CameraReaderNode(DTROS):
 
         return False
 
-    def turn_right(self) -> Tuple[float, float]:
+    def turn_right(self):
         return 1.0, 0.7
 
-    def turn_left(self) -> Tuple[float, float]:
+    def turn_left(self):
         return 0.85, 1.0
 
-    def go_straight(self) -> Tuple[float, float]:
+    def go_straight(self):
         return 1.0, 1.0
 
-    def follow_lane(self) -> Tuple[float, float]:
+    def follow_lane(self):
         if self.shutting_down:
             return
 
