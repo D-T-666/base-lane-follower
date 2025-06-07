@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+import time
 import os
 import rospy
 from duckietown.dtros import DTROS, NodeType
@@ -93,7 +95,7 @@ class CameraReaderNode(DTROS):
         self.image = self.bridge.compressed_imgmsg_to_cv2(msg)
 
         action_end = False
-        if instructions[self.ind] == "F":
+        if self.instructions[self.ind] == "F":
             action_end = detect_red(self.image)
         else:
             action_end = self.action_timer < 0
@@ -102,7 +104,7 @@ class CameraReaderNode(DTROS):
             self.ind += 1
             self.action_timer = self.action_times[ind]
 
-        left_wheel, right_wheel = actions[instructions[ind]](self.image)
+        left_wheel, right_wheel = self.actions[self.instructions[ind]](self.image)
 
         self.left_motor.publish(left_motor)
         self.right_motor.publish(right_motor)
