@@ -25,6 +25,9 @@ class CameraReaderNode(DTROS):
         super(CameraReaderNode, self).__init__(
             node_name=node_name, node_type=NodeType.VISUALIZATION)
 
+        self.ind = 0
+        self.instructions = list("FLFRFSFR")
+
         # Initialize parameters
         self.base_speed = BASE_SPEED
         self.curve_speed = CURVE_SPEED
@@ -72,7 +75,7 @@ class CameraReaderNode(DTROS):
         self.image = self.bridge.compressed_imgmsg_to_cv2(msg)
 
         action_end = False
-        if instructions[ind] = "F":
+        if instructions[self.ind] = "F":
             action_end = detect_red(self.image)
         else:
             action_end = timer < 0
