@@ -25,8 +25,25 @@ class CameraReaderNode(DTROS):
         super(CameraReaderNode, self).__init__(
             node_name=node_name, node_type=NodeType.VISUALIZATION)
 
+        self.actions = {
+            "F": self.follow_lane,
+            "R": self.turn_right,
+            "S": self.go_straight,
+            "L": self.turn_left
+        }
+
+        # in seconds
+        self.action_times = {
+            "F": 69,
+            "R": 2,
+            "S": 3,
+            "L": 4
+        }
         self.ind = 0
         self.instructions = list("FLFRFSFR")
+        self.action_timer = self.action_times[self.instructions[self.ind]]
+
+        self.p_time = time.time()
 
         # Initialize parameters
         self.base_speed = BASE_SPEED
@@ -71,25 +88,27 @@ class CameraReaderNode(DTROS):
         return sum(history_buffer) / len(history_buffer)
 
     def callback(self, msg):
+        delta_time = time.time() - self.p_time
         # Process image
         self.image = self.bridge.compressed_imgmsg_to_cv2(msg)
 
         action_end = False
-        if instructions[self.ind] = "F":
+        if instructions[self.ind] == "F":
             action_end = detect_red(self.image)
         else:
-            action_end = timer < 0
+            action_end = self.action_timer < 0
 
         if action_end:
-            ind += 1
+            self.ind += 1
+            self.action_timer = self.action_times[ind]
 
         left_wheel, right_wheel = actions[instructions[ind]](self.image)
 
         self.left_motor.publish(left_motor)
         self.right_motor.publish(right_motor)
 
-        action_timer -= 1/K
-        rate.sleep()
+        self.action_timer -= delta_time
+        self.p_time = time.time()
 
     def detect_red(self) -> bool:
         h, w = self.image.shape[:2]
@@ -114,7 +133,7 @@ class CameraReaderNode(DTROS):
     def go_straight(self) -> Tuple[float, float]:
         return 1.0, 1.0
 
-    def follow_lane(self):
+    def follow_lane(self) -> Tuple[float, float]:
         if self.shutting_down:
             return
 
