@@ -15,6 +15,7 @@ dt-launchfile-init
 # launching app
 dt-exec rosrun Main camera_node.py
 dt-exec rosrun Main wheel_control_node.py
+dt-exec rosrun Main encoder_node.py
 
 
 # ----------------------------------------------------------------------------
