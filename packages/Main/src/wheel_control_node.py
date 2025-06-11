@@ -52,7 +52,6 @@ class WheelControlNode(DTROS):
         self.target[1] = msg.data
     
     def callback_encoders(self, msg):
-        print(msg)
         self.value = msg.data
 
         new_time = time.time()
@@ -73,17 +72,11 @@ class WheelControlNode(DTROS):
             p * error[1] + i * self.integral[1] + d * derivative[1],
         ]
 
-        print("data")
-        print(error)
-        print(self.integral)
-        print(derivative)
-        print(motor_speed)
-        print()
-        print()
-
         message = WheelsCmdStamped(vel_left=motor_speed[0], vel_right=motor_speed[1])
 
         self.p_error = error
+
+        message = WheelsCmdStamped(vel_left=self.target[0], vel_right=self.target[1])
         self._publisher.publish(message)
 
     def on_shutdown(self):
