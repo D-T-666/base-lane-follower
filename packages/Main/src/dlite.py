@@ -22,24 +22,48 @@ def create_graph(filename: str) -> dict:
     '''
     graph: dict = {}
     try:
-        with open(filename, 'r') as f:
-            for line in f:
-                line = line.strip()
-                match = re.match(r"C\((v\d+), (v\d+)\) = (\d+)", line)
-                if match:
-                    node_from, node_to, cost_str = match.groups()
-                    cost = int(cost_str)
-                    if node_from not in graph:
-                        graph[node_from] = {}
-                    graph[node_from][node_to] = cost
-                else:
-                    raise ValueError(f"Invalid line format: {line}")
+        # with open(filename, 'r') as f:
+        f = """C(v1, v5) = 8
+C(v1, v6) = 55
+C(v1, v9) = 23
+C(v2, v5) = 9
+C(v2, v8) = 57
+C(v2, v9) = 24
+C(v3, v5) = 7
+C(v3, v6) = 54
+C(v3, v8) = 59
+C(v4, v6) = 53
+C(v4, v8) = 58
+C(v4, v9) = 25
+C(v5, v2) = 55
+C(v5, v10) = 36
+C(v6, v4) = 7
+C(v6, v10) = 37
+C(v7, v2) = 54
+C(v7, v4) = 9
+C(v8, v3) = 25
+C(v8, v7) = 37
+C(v9, v1) = 57
+C(v9, v7) = 38
+C(v10, v1) = 58
+C(v10, v3) = 23""".split("\n")
+        for line in f:
+            line = line.strip()
+            match = re.match(r"C\((v\d+), (v\d+)\) = (\d+)", line)
+            if match:
+                node_from, node_to, cost_str = match.groups()
+                cost = int(cost_str)
+                if node_from not in graph:
+                    graph[node_from] = {}
+                graph[node_from][node_to] = cost
+            else:
+                raise ValueError(f"Invalid line format: {line}")
     except FileNotFoundError:
         raise FileNotFoundError(f"File not found: {filename}")
     return graph
 
 
-class DStarLite:
+class DStarLite():
     """
     Implementation of the D* Lite algorithm for path planning in dynamic environments.
     
@@ -248,10 +272,8 @@ class DStarLite:
         Main loop of the D* Lite algorithm.
         
         This method computes the initial plan and would handle replanning in
-        a dynamic environment when edge costs change. For simplicity, this
-        implementation assumes a static environment and just returns the path.
-        
-        Returns:
+        a dynamic environm
+    graph = create_graph("map.txt")
             The computed path from s_start to s_goal, or empty list if no path exists.
         """
         self.s_last = self.s_start
@@ -294,19 +316,42 @@ class DStarLite:
 
         dirs = dict()
 
-        with open("dirs.txt", "r") as f:
-            for l in f.readlines():
-                x = l.strip().split(" ")
-                dirs[(int(x[0]), int(x[1]))] = x[2]
+        f = """1 5 S
+1 6 L
+1 9 R
+2 5 L
+2 8 R
+2 9 S
+3 5 R
+3 6 S
+3 8 L
+4 6 R
+4 8 S
+4 9 L
+5 2 L
+5 10 R
+6 4 R
+6 10 S
+7 2 S
+7 4 L
+8 3 L
+8 7 S
+9 1 R
+9 7 L
+10 1 S
+10 3 R""".split('\n')
+        for l in f:
+            x = l.strip().split(" ")
+            dirs[(int(x[0]), int(x[1]))] = x[2]
 
         instructions = []
 
         for v in zip(nodes[:-1], nodes[1:]):
             x = (int(v[0][1:]), int(v[1][1:]))
-            instructions.append("F")
             instructions.append(dirs[x])
+            instructions.append("F")
 
-        instructions.append("F")
+        # instructions.append("F")
 
         return instructions
 

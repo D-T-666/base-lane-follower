@@ -9,7 +9,6 @@ from duckietown_msgs.msg import WheelsCmdStamped
 # from sensor_msgs.msg import Image
 from std_msgs.msg import Float64
 # from std_msgs.msg import Bool
-from cv_bridge import CvBridge
 # import numpy as np
 # import cv2
 from std_msgs.msg import Float32MultiArray
@@ -42,8 +41,6 @@ class WheelControlNode(DTROS):
         rospy.Subscriber("encoders", Float32MultiArray, self.callback_encoders)
 
         rospy.on_shutdown(self.on_shutdown)
-
-        self.bridge = CvBridge()
 
     def callback_left(self, msg):
         self.target[0] = msg.data
